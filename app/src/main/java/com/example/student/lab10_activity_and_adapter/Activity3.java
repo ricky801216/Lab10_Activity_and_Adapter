@@ -1,58 +1,112 @@
 package com.example.student.lab10_activity_and_adapter;
 
+import android.content.DialogInterface;
 import android.content.Intent;
-import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
-import android.text.Html;
+import android.support.v7.app.AlertDialog;
+import android.util.Log;
 import android.view.View;
-import android.widget.RadioButton;
-import android.widget.TextView;
 
-public class Activity3 extends AppCompatActivity {
+import com.example.student.lab10_activity_and_adapter.Adapter.QuestionActivity;
+import com.example.student.lab10_activity_and_adapter.Adapter.QuestionAdapter;
+import com.example.student.lab10_activity_and_adapter.Adapter.QuestionAdapterFactory;
+import com.example.student.lab10_activity_and_adapter.Service.SubmitAnswerService;
+import com.example.student.lab10_activity_and_adapter.model.UserAnswer;
 
-    public static final String Q3_ANSWER_KEY = "Q3";
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
-    private TextView m_tv_no;
-    private TextView m_tv_question;
-    private RadioButton m_radio_a;
-    private RadioButton m_radio_b;
-    private RadioButton m_radio_c;
-    private CharSequence m_answer;
+public class Activity3 extends QuestionActivity {
+        public void onStart(){
+            super.onStart();
+            setNextButtonText("Finish");// 呼叫父類寫好的功能
+        }
+
+    public void next(View view){
+        QuestionAdapter adapter = QuestionAdapterFactory.getQuestionAdapter();
+        final UserAnswer userAnswer = QuestionActivity.getsUserAnswer();
+        StringBuilder message = new StringBuilder();
+
+        message.append("您的作答如下\n\n");
+        for (int i = 0 ; i< adapter.getQuestionCount() ; i++){
+            message.append(String.valueOf(i+1))
+                    .append(": ")
+                    .append(userAnswer.getAnswer(i))
+                    .append("\n")
+                    .append(userAnswer.getDescription(i))
+                    .append("\n");
+        }
+        message.append("\n確定要結束 ?");
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage(message)
+                .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                Intent intent = new Intent(Activity3.this, MainActivity.class);
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                //提交答案至 Google 表單
+             SubmitAnswerService  service = SubmitAnswerService.retrofit
+                     .create(SubmitAnswerService.class);
+                        char q1Ans = userAnswer.getAnswer(0);//使用者第一題答案
+                        char q2Ans = userAnswer.getAnswer(1);//使用者第一題答案
+                        char q3Ans = userAnswer.getAnswer(2);//使用者第一題答案
+                        String url =
+                         "/forms/d/1CmzVy2eR17nF8pAqHfvCv0uSGGEU9mTogkzHamEt998/formResponse?ifq&entry.487289351=" + q1Ans +"&entry" +
+                                 ".1085064373="+ q2Ans +"&entry.1414453613="+ q3Ans +"&submit=Submit\"";
+                        Call<String> call = service.send(url);
+                        call.enqueue(new Callback<String>() {
+                            @Override
+                            public void onResponse(Call<String> call, Response<String> response) {
+                                    if (response.isSuccessful()){
+                                        Log.d("Retrofit", "onResponse() success");
+                                        Log.d("Retrofit Response" , response.body());
+                                    }else {
+                                        Log.d("Retrofit", "onResponse() : error response, no access to response ?");
+                                        Log.d("Retrofit", "response code = " + response.code());
+                                    }
+                            }
+
+                            @Override
+                            public void onFailure(Call<String> call, Throwable t) {
+                                    Log.d("Retrofit", "onFailure() :" + t.toString());
+                            }
+                        });
+                        startActivity(intent);//回主畫面
+                        QuestionActivity.resetQuestionIndex();//索引編號歸零
+
+                    }
+                }).setNegativeButton("NO",new DialogInterface.OnClickListener() {
+
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+
+            }
+        })
+        .show();
+
+
+    }
+
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_3);
-        init();
-    }
-    public void init(){
-        m_tv_no = (TextView)findViewById(R.id.tv_no);
-        m_tv_question = (TextView)findViewById(R.id.tv_question);
-        m_radio_a = (RadioButton)findViewById(R.id.radio_a);
-        m_radio_b = (RadioButton)findViewById(R.id.radio_b);
-        m_radio_c = (RadioButton)findViewById(R.id.radio_c);
-
-        m_tv_no.setText("3");
-        m_tv_question.setText(Html.fromHtml(getString(R.string.question_3)));
-        m_radio_a.setText(Html.fromHtml(getString(R.string.question_3_a)));
-        m_radio_b.setText(Html.fromHtml(getString(R.string.question_3_b)));
-        m_radio_c.setText(Html.fromHtml(getString(R.string.question_3_c)));
-
+    public Class getBackActivityClass() {
+        return Activity2.class;
     }
 
-    public void main(View view){
-        Intent intent = new Intent(this, MainActivity.class);
-        //將先前開始的 Activity 移至最上層
-        intent.putExtra(Q3_ANSWER_KEY, m_answer);
-        intent.addFlags(Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT);
-        startActivity(intent);
-        overridePendingTransition(R.anim.push_right_in, R.anim.push_left_out);
+    @Override
+    public Class getNextActivityClass() {
+        return null;
+    }
 
+    @Override
+    public int getBackButtonVisibility() {
+        return QuestionActivity.VISIBLE;
     }
-    public void back(View view){
-        finish();
-    }
-    public void click(View view){
-        m_answer = view.getTag().toString();
+
+    @Override
+    public int getNextButtonVisibility() {
+        return QuestionActivity.VISIBLE;
     }
 }

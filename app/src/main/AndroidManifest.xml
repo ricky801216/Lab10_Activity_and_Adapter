@@ -3,12 +3,13 @@
     package="com.example.student.lab10_activity_and_adapter">
 
     <application
+        android:name=".App.MyApp"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".MainActivity">
+        <activity android:name=".MainActivity" android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -16,10 +17,12 @@
             </intent-filter>
         </activity>
         <activity android:name=".ColorPickerActivity" />
-        <activity android:name=".Activity1" />
-        <activity android:name=".Activity2" />
-        <activity android:name=".Activity3" />
+        <activity android:name=".Activity1" android:screenOrientation="portrait"/>
+        <activity android:name=".Activity2" android:screenOrientation="portrait"/>
+        <activity android:name=".Activity3" android:screenOrientation="portrait"/>
         <activity android:name=".EditTextActivity" />
     </application>
+
+    <uses-permission android:name="android.permission.INTERNET"/>
 
 </manifest>

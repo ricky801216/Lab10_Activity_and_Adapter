@@ -12,6 +12,8 @@ public class MainActivity extends AppCompatActivity {
 
     private static final int SELECT_COLOR_REQEST = 0;
     private static final int EDIT_TEXT_REQEST = 1;
+
+    private int m_color = 0xFFFFFFFF; // 紀錄選了什麼顏色
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -19,6 +21,7 @@ public class MainActivity extends AppCompatActivity {
     }
     public void next(View view){
         Intent intent = new Intent(this, Activity1.class);
+        intent.putExtra(ColorPickerActivity.BUNDLE_KEY_COLOR_INT, m_color);
         startActivity(intent);
 
     }
